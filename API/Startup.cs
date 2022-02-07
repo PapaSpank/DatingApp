@@ -1,5 +1,6 @@
 using API.Extensions;
 using API.Middleware;
+using API.SignalR;
 using Microsoft.OpenApi.Models;
 
 namespace API
@@ -33,6 +34,7 @@ namespace API
                       {
                           builder
                             .AllowAnyHeader()
+                            .AllowCredentials()
                             .AllowAnyMethod()
                             .WithOrigins(
                                 "http://localhost:4200",
@@ -40,6 +42,7 @@ namespace API
                       });
             });
             services.AddIdentityServices(Configuration);
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime.
@@ -68,6 +71,8 @@ namespace API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<PresenceHub>("hubs/presence");
+                endpoints.MapHub<PresenceHub>("hubs/message");
             });
         }
     }
