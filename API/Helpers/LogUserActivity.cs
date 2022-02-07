@@ -10,10 +10,11 @@ namespace API.Helpers
 {
     public class LogUserActivity : IAsyncActionFilter
     {
-        private readonly IUserRepository _userRepository;
-        public LogUserActivity(IUserRepository userRepository)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public LogUserActivity(IUnitOfWork unitOfWork)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context,
@@ -24,15 +25,9 @@ namespace API.Helpers
                 return;
             
             var userId = resultContext.HttpContext.User.GetUserId();
-            var user = await _userRepository.GetUserByIdAsync(userId);
-            user.LastActive = DateTime.Now;
-            await _userRepository.SaveAllAsync();
-
-            // var username = resultContext.HttpContext.User.GetUsername();
-            // var repo = resultContext.HttpContext.RequestServices.GetService<IUserRepository>();
-            // var user = await repo.GetUserByUsernameAsync(username);
-            // user.LastActive = DateTime.Now;
-            // await repo.SaveAllAsync();
+            var user = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
+            user.LastActive = DateTime.UtcNow;
+            await _unitOfWork.Complete();
         }
     }
 }
